@@ -89,3 +89,17 @@ async def get_security_groups():
         })
 
     return security_groups
+
+#cloude state
+
+async def get_aws_state():
+
+    ec2_task = get_ec2_instances()
+    subnet_task = get_subnets()
+    sg_task = get_security_groups()
+
+    ec2s, subnets, security_groups = await asyncio.gather(
+        ec2_task,
+        subnet_task,
+        sg_task
+    )
