@@ -103,3 +103,9 @@ async def get_aws_state():
         subnet_task,
         sg_task
     )
+
+    return {
+        "ec2": ec2s,
+        "subnets": subnets,
+        "security_groups": security_groups
+    }
