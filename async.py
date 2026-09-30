@@ -1,17 +1,19 @@
-#asyncio used to write concurrent code using the  async and await syntax
+#asyncio used to write concurrent code using the  async and await syntax used for asynchronpus prgm 
 #boto3 ->allows py pgm to communicate with AWS
+
+"""AeroDrift AWS ingestion layer code"""
 
 import asyncio
 import boto3
 
 #EC2 -> Elastic compute cloude
-#AWS client
+#creates AWS client for EC2 service
 
 ec2 = boto3.client("ec2", region_name="us-east-1")
 
 #async boto3 wraper
-
-async def async_boto3_call(func, **kwargs):
+#**kwargs -> to pass optional arguments
+async def async_boto3_call(func, **kwargs): #async function
   
     loop = asyncio.get_running_loop()
 
