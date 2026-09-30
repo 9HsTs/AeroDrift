@@ -1,80 +1,88 @@
-#this is mock code 
-#not include boto3 module
+#asyncio used to write concurrent code using the  async and await syntax
+#boto3 ->allows py pgm to communicate with AWS
+
 import asyncio
+import boto3
 
-MOCK_EC2 = [
-    {
-        "InstanceId": "i-001",
-        "InstanceType": "t2.micro",
-        "State": {"Name": "running"},
-        "SubnetId": "subnet-001",
-        "SecurityGroups": [
-            {"GroupId": "sg-001"}
-        ]
-    },
-    {
-        "InstanceId": "i-002",
-        "InstanceType": "t2.small",
-        "State": {"Name": "running"},
-        "SubnetId": "subnet-002",
-        "SecurityGroups": [
-            {"GroupId": "sg-002"}
-        ]
-    }
-]
+#EC2 -> Elastic compute cloude
+#AWS client
 
+ec2 = boto3.client("ec2", region_name="us-east-1")
 
-MOCK_SUBNETS = [
-    {
-        "SubnetId": "subnet-001",
-        "VpcId": "vpc-001",
-        "CidrBlock": "10.0.1.0/24",
-        "AvailabilityZone": "us-east-1a",
-        "State": "available"
-    },
-    {
-        "SubnetId": "subnet-002",
-        "VpcId": "vpc-001",
-        "CidrBlock": "10.0.2.0/24",
-        "AvailabilityZone": "us-east-1b",
-        "State": "available"
-    }
-]
+#async boto3 wraper
 
+async def async_boto3_call(func, **kwargs):
+  
+    loop = asyncio.get_running_loop()
 
-MOCK_SECURITY_GROUPS = [
-    {
-        "GroupId": "sg-001",
-        "GroupName": "web-server",
-        "VpcId": "vpc-001",
-        "IpPermissions": [
-            {
-                "IpProtocol": "tcp",
-                "FromPort": 80,
-                "ToPort": 80
-            }
-        ],
-        "IpPermissionsEgress": [
-            {
-                "IpProtocol": "-1"
-            }
-        ]
-    },
-    {
-        "GroupId": "sg-002",
-        "GroupName": "app-server",
-        "VpcId": "vpc-001",
-        "IpPermissions": [
-            {
-                "IpProtocol": "tcp",
-                "FromPort": 22,
-                "ToPort": 22
-            }
-        ],
-        "IpPermissionsEgress": [
-            {
-                "IpProtocol": "-1"
-            }
-        ]
-    }
-]
+    return await loop.run_in_executor(
+        None,
+        lambda: func(**kwargs)
+    )
+
+#EC2 instance -> delivers secure, reliable virtual servers known as instance
+
+async def get_ec2_instances():
+    response = await async_boto3_call(
+        ec2.describe_instances
+    )
+
+    instances = []
+
+    for reservation in response.get("Reservations", []):
+        for instance in reservation.get("Instances", []):
+
+            instances.append({
+                "instance_id": instance.get("InstanceId"),
+                "instance_type": instance.get("InstanceType"),
+                "state": instance.get("State", {}).get("Name"),
+                "subnet_id": instance.get("SubnetId"),
+                "security_groups": [
+                    sg["GroupId"]
+                    for sg in instance.get("SecurityGroups", [])
+                ]
+            })
+
+    return instances
+
+#subnet -> a logically isolated virtual network in the AWS to launch and secure resources
+
+async def get_subnets():
+    response = await async_boto3_call(
+        ec2.describe_subnets
+    )
+
+    subnets = []
+
+    for subnet in response.get("Subnets", []):
+
+        subnets.append({
+            "subnet_id": subnet.get("SubnetId"),
+            "vpc_id": subnet.get("VpcId"),
+            "cidr_block": subnet.get("CidrBlock"),
+            "availability_zone": subnet.get("AvailabilityZone"),
+            "state": subnet.get("State")
+        })
+
+    return subnets
+
+#security gropus ->a virtual firewall that controls incoming and outgoing trafiic for AWS resources such as EC2
+
+async def get_security_groups():
+    response = await async_boto3_call(
+        ec2.describe_security_groups
+    )
+
+    security_groups = []
+
+    for sg in response.get("SecurityGroups", []):
+
+        security_groups.append({
+            "group_id": sg.get("GroupId"),
+            "group_name": sg.get("GroupName"),
+            "vpc_id": sg.get("VpcId"),
+            "ingress_rules": sg.get("IpPermissions", []),
+            "egress_rules": sg.get("IpPermissionsEgress", [])
+        })
+
+    return security_groups
