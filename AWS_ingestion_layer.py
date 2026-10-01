@@ -2,6 +2,7 @@
 #boto3 ->allows py pgm to communicate with AWS
 #pull current AWS infra data
 
+
 """AeroDrift AWS ingestion layer code"""
 
 import asyncio
@@ -137,21 +138,23 @@ async def main():
     #wait until EC2 data retrieved then subnet and then SG
 
     #print EC2 data
-    print("\n===== EC2 INSTANCES =====")
+    print("\nEC2 INSTANCES")
     for instance in state["ec2"]:
         print(instance)
 
     #print Subnets
-    print("\n===== SUBNETS =====")
+    print("\nSUBNETS")
     for subnet in state["subnets"]:
         print(subnet)
 
     #print Security Groups
-    print("\n===== SECURITY GROUPS =====")
+    print("\nSECURITY GROUPS")
     for sg in state["security_groups"]:
         print(sg)
 
 #python entry point -> this checks whether this file is being executed directly
+        #run this part only when this file is executed directly
+
 if __name__ == "__main__":
     asyncio.run(main())  #start thr async pgm
 
