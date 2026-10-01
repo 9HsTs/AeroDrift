@@ -2,7 +2,6 @@
 #boto3 ->allows py pgm to communicate with AWS
 #pull current AWS infra data
 
-
 """AeroDrift AWS ingestion layer code"""
 
 import asyncio
