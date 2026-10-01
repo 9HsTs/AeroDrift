@@ -109,3 +109,25 @@ async def get_aws_state():
         "subnets": subnets,
         "security_groups": security_groups
     }
+
+async def main():
+
+    state = await get_aws_state()
+
+    print("\n===== EC2 INSTANCES =====")
+    for instance in state["ec2"]:
+        print(instance)
+
+    print("\n===== SUBNETS =====")
+    for subnet in state["subnets"]:
+        print(subnet)
+
+    print("\n===== SECURITY GROUPS =====")
+    for sg in state["security_groups"]:
+        print(sg)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+    #await main()
