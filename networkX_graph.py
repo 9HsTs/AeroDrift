@@ -1,4 +1,4 @@
-# networkx -> py library for creating, analyzing and working with graphs/network
+#networkx -> py library for creating, analyzing and working with graphs/network
 #graph containing nodes and edges
 #nodes -> AWS resources
 #edges -> relationship bet resources
