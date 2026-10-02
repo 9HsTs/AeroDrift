@@ -1,0 +1,7 @@
+boto3
+pydantic
+python-dotenv
+networkx
+fastapi
+uvicorn
+pytest

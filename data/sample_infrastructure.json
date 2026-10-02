@@ -1,0 +1,56 @@
+{
+  "resources": [
+    {
+      "id": "vpc-001",
+      "name": "production-vpc",
+      "resource_type": "vpc",
+      "provider": "aws",
+      "region": "ap-south-1",
+      "configuration": {
+        "cidr": "10.0.0.0/16"
+      },
+      "tags": {
+        "environment": "production"
+      }
+    },
+    {
+      "id": "sg-001",
+      "name": "web-security-group",
+      "resource_type": "security_group",
+      "provider": "aws",
+      "region": "ap-south-1",
+      "configuration": {
+        "inbound_rules": [
+          {
+            "protocol": "tcp",
+            "port": 22,
+            "source": "10.0.0.0/16"
+          },
+          {
+            "protocol": "tcp",
+            "port": 80,
+            "source": "0.0.0.0/0"
+          }
+        ]
+      },
+      "tags": {
+        "environment": "production"
+      }
+    },
+    {
+      "id": "ec2-001",
+      "name": "web-server",
+      "resource_type": "ec2",
+      "provider": "aws",
+      "region": "ap-south-1",
+      "configuration": {
+        "instance_type": "t3.micro",
+        "security_group": "sg-001",
+        "vpc": "vpc-001"
+      },
+      "tags": {
+        "environment": "production"
+      }
+    }
+  ]
+}
