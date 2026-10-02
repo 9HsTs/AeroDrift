@@ -23,18 +23,23 @@ def build_aws_graph(aws_data):
         )
 
 #add subnet nodes
+        #loops throungh all available subnets
     for subnet in aws_data.get("subnets", []):
-        subnet_id = subnet["SubnetId"]
-        vpc_id = subnet["VpcId"]
+        subnet_id = subnet["SubnetId"]  #get the subnet id
+        vpc_id = subnet["VpcId"]        #get the vpc id
 
+    #add the subnet as a node
+    #this creates a networkX node
     graph.add_node(
             subnet_id,
             resource_type="Subnet",
             name=subnet_id
         )
 
-        # Subnet belongs to VPC
+    #check whether the VPC exists
+    #if exists, then create a realtion betweeen vpc and subnet
     if vpc_id in graph:
+                #creates an edge
                 graph.add_edge(
                 vpc_id,
                 subnet_id,
