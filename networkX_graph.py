@@ -45,5 +45,9 @@ def build_aws_graph(aws_data):
                 subnet_id,
                 relationship="contains"
             )
+    
+    #process EC2 instances from AWS data
+    for instance in aws_data.get("instances", []):
+        instance_id = instance["InstanceId"]  #get EC2 instance ID
 
    
