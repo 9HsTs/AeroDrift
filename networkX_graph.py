@@ -59,5 +59,115 @@ def build_aws_graph(aws_data):
         #subnet id , which subnet conatains the EC2 instance
         subnet_id = instance.get("SubnetId")
 
+         # EC2 is connected to its subnet
+        #checks that the subnet is already present as a node
+        #checks that a subnet ID actually exists
 
-   
+        if subnet_id and subnet_id in graph:
+            graph.add_edge(
+                subnet_id,
+                instance_id,
+                relationship="contains"
+            )
+    #process security groups
+    for sg in aws_data.get("security_groups", []):
+        sg_id = sg["GroupId"]   #get security group id
+
+        #add security group as node
+        graph.add_node(
+            sg_id,
+            resource_type="SecurityGroup",
+            name=sg.get("GroupName", sg_id) #if group name exist use it, otherwise use gropu id
+        )
+
+    #process EC2 security gropu relationship
+    #to find which SG are attached to which EC2 instance
+    for instance in aws_data.get("instances", []):
+        instance_id = instance["InstanceId"]        #get ec2 id
+
+        for sg in instance.get("SecurityGroups", []):
+            sg_id = sg["GroupId"]       #get security group id 
+
+            #check both nodes
+            if sg_id in graph and instance_id in graph:
+
+                #ec2 security group realtionship
+                graph.add_edge(
+                    instance_id,
+                    sg_id,
+                    relationship="protected_by"
+                )
+
+    return graph        
+
+#print graph function
+#display the graph information
+#not build but prints the it
+def print_graph(graph):
+
+    print("\n========== AWS GRAPH ==========\n")
+
+    print("NODES:")
+    #loops through all graph nodes
+    #data = true -> nodes attribute
+    for node, attributes in graph.nodes(data=True):
+        print(
+            node,
+            "->",
+            attributes
+        )
+
+    print("\nEDGES:")
+    for source, target, attributes in graph.edges(data=True):
+        print(
+            source,
+            "-->",
+            target,
+            attributes
+        )
+
+    print("\n================================")
+    print("Total Nodes :", graph.number_of_nodes())
+    print("Total Edges :", graph.number_of_edges())
+
+#mock aws data
+aws_data = {
+
+    "vpcs": [
+        {
+            "VpcId": "vpc-001"
+        }
+    ],
+
+    "subnets": [
+        {
+            "SubnetId": "subnet-001",
+            "VpcId": "vpc-001"
+        }
+    ],
+
+    "instances": [
+        {
+            "InstanceId": "i-001",
+            "SubnetId": "subnet-001",
+
+            "SecurityGroups": [
+                {
+                    "GroupId": "sg-001"
+                }
+            ]
+        }
+    ],
+
+    "security_groups": [
+        {
+            "GroupId": "sg-001",
+            "GroupName": "web-server-sg"
+        }
+    ]
+}
+
+#build graph   
+aws_graph = build_aws_graph(aws_data)
+
+print_graph(aws_graph)
