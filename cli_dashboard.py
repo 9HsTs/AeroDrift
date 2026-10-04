@@ -70,6 +70,18 @@ def build_topology_tree(graph):
     root = Tree(
         "[bold cyan]AWS Cloud Topology[/bold cyan]"
     )
+    visited = set()
+    
+    #finding root nodes
+    # Start from nodes that have no incoming edges.
+    roots = [
+        node for node in graph.nodes
+        if graph.in_degree(node) == 0
+    ]
+
+    # Handle graphs without a root.
+    if not roots and graph.number_of_nodes() > 0:
+        roots = [next(iter(graph.nodes))]
 
 
 
