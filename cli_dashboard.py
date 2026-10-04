@@ -83,5 +83,42 @@ def build_topology_tree(graph):
     if not roots and graph.number_of_nodes() > 0:
         roots = [next(iter(graph.nodes))]
 
+    def add_branch(parent, node):
+
+        attrs = graph.nodes[node]
+        name = attrs.get("name", str(node))
+        resource_type = attrs.get("type", "resource")
+
+        if attrs.get("type") == "internet":
+            label = f"[red]🌐 {name}[/red]"
+        elif attrs.get("type") == "database":
+            label = f"[green]🗄 {name}[/green]"
+        elif attrs.get("type") == "security_group":
+            label = f"[yellow]🔐 {name}[/yellow]"
+        else:
+            label = f"[cyan]☁ {name}[/cyan]"
+
+        branch = parent.add(label)
+
+        # Avoid infinite recursion if the graph has cycles.
+        if node in visited:
+            branch.add("[dim]Already displayed[/dim]")
+            return
+
+        visited.add(node)
+
+        for neighbor in graph.successors(node):
+            add_branch(branch, neighbor)
+
+    for node in roots:
+        add_branch(root, node)
+
+    # Include any disconnected components.
+    for node in graph.nodes:
+        if node not in visited:
+            add_branch(root, node)
+
+    return root
+
 
 
