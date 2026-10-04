@@ -63,12 +63,14 @@ def detect_internet_to_private_db_drift(graph):
     internet_node = "0.0.0.0/0"
 
     #find private database
-    #find all nodes that are databases and are marked private
+    #find all nodes that are databases and are marked private...this works as a filter
     private_database = [
         node
-        for node, data in graph.nodes(data=True)
-        if data.get("type") == "database"
-        and data.get("private") is True
+        for node, data in graph.nodes(data=True)  #loops through all nodes along with metadata
+        if data.get("type") == "database"           #check whether its a database
+        and data.get("private") is True             #check data is private
+
+        #if both conditions are true thrn node added in private databse
 
 
     ]
@@ -76,27 +78,34 @@ def detect_internet_to_private_db_drift(graph):
     #empty list for detected path
     drift_path = []
 
+    #loop through private databse
     for database in private_database:
-        if nx.has_path(graph, internet_node, database):
+        if nx.has_path(graph, internet_node, database):         #check path exists core graph query
+
+            #find the actual shortest path
             path = nx.shortest_path(
                 graph,
                 source=internet_node,
                 target=database
             )
 
+            #append the detected path
             drift_path.append(path)
 
     return drift_path
 
 #run detection
-
+#call the function
 drift_path = detect_internet_to_private_db_drift(graph)
 
 #result
 
+#empty list --> false
+#non empty list --> true
 if drift_path:
     print("SECURITY DRIFT DETECTED")
 
+    #loop through detected path
     for path in drift_path:
         print("Internet --> Private database path found : ")
         print(" --> ".join(path))
