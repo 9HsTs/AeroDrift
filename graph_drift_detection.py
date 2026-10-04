@@ -102,6 +102,7 @@ drift_path = detect_internet_to_private_db_drift(graph)
 
 #empty list --> false
 #non empty list --> true
+
 if drift_path:
     print("SECURITY DRIFT DETECTED")
 
