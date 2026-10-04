@@ -90,13 +90,13 @@ def build_topology_tree(graph):
         resource_type = attrs.get("type", "resource")
 
         if attrs.get("type") == "internet":
-            label = f"[red]🌐 {name}[/red]"
+            label = f"[red] {name}[/red]"
         elif attrs.get("type") == "database":
-            label = f"[green]🗄 {name}[/green]"
+            label = f"[green] {name}[/green]"
         elif attrs.get("type") == "security_group":
-            label = f"[yellow]🔐 {name}[/yellow]"
+            label = f"[yellow] {name}[/yellow]"
         else:
-            label = f"[cyan]☁ {name}[/cyan]"
+            label = f"[cyan] {name}[/cyan]"
 
         branch = parent.add(label)
 
