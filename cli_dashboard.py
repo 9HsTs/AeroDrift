@@ -136,6 +136,35 @@ def show_topology(graph):
         )
     )
 
+# DETECT INTERNET-TO-PRIVATE-DATABASE PATHS
+#search for a ptemtially dangerous path   - internet ---> private database
+def detect_drift(graph):
+
+    #find internet node and returns node and attribute
+    internet_nodes = [
+        node for node, attrs in graph.nodes(data=True)
+        if (
+            attrs.get("type") == "internet"
+            or attrs.get("cidr") == "0.0.0.0/0"
+            or attrs.get("name") == "Internet (0.0.0.0/0)"
+        )
+    ]
+
+    #find private database
+    #returns evry node and attributes
+    database_nodes = [
+        node for node, attrs in graph.nodes(data=True)
+        if (
+            attrs.get("type") == "database"
+            and attrs.get("private", False)
+        )
+    ]
+
+    #create result table
+    table = Table(title="Drift Detection Results")
+    table.add_column("Internet Source", style="cyan")
+    table.add_column("Private Database", style="green")
+    table.add_column("Result", style="bold")
 
 
 
