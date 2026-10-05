@@ -83,21 +83,23 @@ def build_topology_tree(graph):
     if not roots and graph.number_of_nodes() > 0:
         roots = [next(iter(graph.nodes))]
 
+    #recursive tree building
     def add_branch(parent, node):
 
         attrs = graph.nodes[node]
         name = attrs.get("name", str(node))
         resource_type = attrs.get("type", "resource")
 
-        if attrs.get("type") == "internet":
+        if attrs.get("type") == "internet":     #checks the current node us an internet node
             label = f"[red] {name}[/red]"
-        elif attrs.get("type") == "database":
+        elif attrs.get("type") == "database":   #database node
             label = f"[green] {name}[/green]"
-        elif attrs.get("type") == "security_group":
+        elif attrs.get("type") == "security_group":     #security group node
             label = f"[yellow] {name}[/yellow]"
         else:
             label = f"[cyan] {name}[/cyan]"
 
+        #add node to rich tree
         branch = parent.add(label)
 
         # Avoid infinite recursion if the graph has cycles.
@@ -107,9 +109,10 @@ def build_topology_tree(graph):
 
         visited.add(node)
 
+        #find child nodes
         for neighbor in graph.successors(node):
             add_branch(branch, neighbor)
-
+    #process all root nodes
     for node in roots:
         add_branch(root, node)
 
@@ -119,6 +122,20 @@ def build_topology_tree(graph):
             add_branch(root, node)
 
     return root
+
+# DISPLAY CLOUD TOPOLOGY
+def show_topology(graph):
+
+    console.print()
+    console.print(
+        Panel(
+            build_topology_tree(graph),
+            title="[bold cyan]AeroDrift[/bold cyan]",
+            subtitle="Cloud Topology Explorer",
+            border_style="cyan"
+        )
+    )
+
 
 
 
