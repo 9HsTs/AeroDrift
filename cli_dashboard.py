@@ -166,19 +166,23 @@ def detect_drift(graph):
     table.add_column("Private Database", style="green")
     table.add_column("Result", style="bold")
 
+    #track drift
     found = False
 
-    for source in internet_nodes:
-        for database in database_nodes:
+    for source in internet_nodes:       #loop in internet node
+        for database in database_nodes: #lopp in private database
 
+            #if suspicious path exists
             if nx.has_path(graph, source, database):
 
                 found = True
 
+                #get the acutal path
                 path = nx.shortest_path(
                     graph, source, database
                 )
 
+                #add results on table
                 table.add_row(
                     str(source),
                     str(database),
@@ -189,12 +193,13 @@ def detect_drift(graph):
                     "[yellow]Potential exposure path:[/yellow]"
                 )
 
-                for index, node in enumerate(path):
+                for index, node in enumerate(path):     #enumerate --> gives index and node
                     console.print(
                         f" {index + 1}. "
                         f"{graph.nodes[node].get('name', node)}"
                     )
 
+    #if drift is not found
     if not found:
         console.print(
             "[green]No Internet-to-private-database "
@@ -209,6 +214,68 @@ def detect_drift(graph):
     if found:
         console.print(table)
 
+#SHOW RESOURCE INVENTORY
+#display all cloud resources
+def show_resources(graph):
+
+    #create table
+    table = Table(title="Cloud Resource Inventory")
+
+    #add coloumns in table
+    table.add_column("Resource ID", style="cyan")
+    table.add_column("Resource Name")
+    table.add_column("Type", style="yellow")
+
+    #loop in resources
+    for node, attrs in graph.nodes(data=True):
+        table.add_row(
+            str(node),
+            str(attrs.get("name", node)),
+            str(attrs.get("type", "resource"))
+        )
+
+    console.print(table)
+
+#INTERACTIVE CLI MENU
+#main user interface
+def main():
+
+    graph = create_sample_graph()
+
+    while True:
+
+        console.print()
+        console.print(
+            Panel(
+                "[1] View Cloud Topology\n"
+                "[2] Detect Drift\n"
+                "[3] List Cloud Resources\n"
+                "[4] Exit",
+                title="AeroDrift CLI Menu",
+                border_style="blue"
+            )
+        )
+
+        choice = Prompt.ask(
+            "Select an option",
+            choices=["1", "2", "3", "4"]
+        )
+
+        if choice == "1":
+            show_topology(graph)
+
+        elif choice == "2":
+            detect_drift(graph)
+
+        elif choice == "3":
+            show_resources(graph)
+
+        elif choice == "4":
+            console.print(
+                "[bold cyan]AeroDrift stopped. Goodbye![/bold cyan]"
+            )
+            break
 
 
-
+if __name__ == "__main__":
+    main()
