@@ -166,5 +166,49 @@ def detect_drift(graph):
     table.add_column("Private Database", style="green")
     table.add_column("Result", style="bold")
 
+    found = False
+
+    for source in internet_nodes:
+        for database in database_nodes:
+
+            if nx.has_path(graph, source, database):
+
+                found = True
+
+                path = nx.shortest_path(
+                    graph, source, database
+                )
+
+                table.add_row(
+                    str(source),
+                    str(database),
+                    "[bold red]PATH EXISTS[/bold red]"
+                )
+
+                console.print(
+                    "[yellow]Potential exposure path:[/yellow]"
+                )
+
+                for index, node in enumerate(path):
+                    console.print(
+                        f" {index + 1}. "
+                        f"{graph.nodes[node].get('name', node)}"
+                    )
+
+    if not found:
+        console.print(
+            "[green]No Internet-to-private-database "
+            "path found in this graph.[/green]"
+        )
+    else:
+        console.print(
+            "[bold red]Review security rules and "
+            "network controls immediately.[/bold red]"
+        )
+
+    if found:
+        console.print(table)
+
+
 
 
