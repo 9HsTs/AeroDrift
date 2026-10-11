@@ -5,6 +5,7 @@
 #mock data --> defined manually not actual AWS data but only replicates it.
 
 import asyncio
+import boto3           #AWS SDK
 
 #desingned to clone AWS EC2 clients interface
 
