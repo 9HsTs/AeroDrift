@@ -1,10 +1,12 @@
 #asyncio used to write concurrent code using the  async and await syntax used for asynchronpus prgm 
 #boto3 ->allows py pgm to communicate with AWS
 #pull current AWS infra data
-
-"""AeroDrift AWS ingestion layer code"""
+#this code simulates collecting cloud infra info from AWS, without connecting to real AWS.
+#mock data --> defined manually not actual AWS data but only replicates it.
 
 import asyncio
+
+#desingned to clone AWS EC2 clients interface
 
 class MockEC2Client:
 #fetching EC2, subnet and security grps
@@ -13,16 +15,16 @@ class MockEC2Client:
 #ec2 -> creates AWS client for EC2 service
     def describe_instances(self, **kwargs):
         return {
-            "Reservations": [
+            "Reservations": [           #dict key
                 {
                     "Instances": [
                         {
-                            "InstanceId": "i-mock-app001",
-                            "InstanceType": "t2.micro",
-                            "State": {"Name": "running"},
-                            "SubnetId": "subnet-mock-public",
+                            "InstanceId": "i-mock-app001",          #id of EC2
+                            "InstanceType": "t2.micro",             #instance type
+                            "State": {"Name": "running"},           #state
+                            "SubnetId": "subnet-mock-public",       #subnet containing instance
                             "SecurityGroups": [
-                                {"GroupId": "sg-mock-app"}
+                                {"GroupId": "sg-mock-app"}          #list of sg
                             ]
                         },
                         {
@@ -116,8 +118,11 @@ class MockEC2Client:
         }
 
 # Use local mock data instead of making real AWS API calls.
+#creating the mock client
+
 ec2 = MockEC2Client()
 
+#the asynchronous wrapper
 async def async_boto3_call(func, **kwargs):
    
     loop = asyncio.get_running_loop()
@@ -126,7 +131,7 @@ async def async_boto3_call(func, **kwargs):
         None,
         lambda: func(**kwargs)
     )
-
+#get EC2 instances
 async def get_ec2_instances():
     response = await async_boto3_call(
         ec2.describe_instances
@@ -150,6 +155,7 @@ async def get_ec2_instances():
 
     return instances
 
+#get subnets
 async def get_subnets():
     response = await async_boto3_call(
         ec2.describe_subnets
@@ -169,6 +175,7 @@ async def get_subnets():
 
     return subnets
 
+#get security groups
 async def get_security_groups():
     response = await async_boto3_call(
         ec2.describe_security_groups
@@ -188,12 +195,14 @@ async def get_security_groups():
 
     return security_groups
 
+#3 ingestion operations
 async def get_aws_state():
 
     ec2_task = get_ec2_instances()
     subnet_task = get_subnets()
     sg_task = get_security_groups()
 
+    #scheduled the supplied routines and awaits their results
     ec2s, subnets, security_groups = await asyncio.gather(
         ec2_task,
         subnet_task,

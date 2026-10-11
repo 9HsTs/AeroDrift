@@ -1,10 +1,12 @@
+#asyncio -> py library for asynchoronous programming
 import asyncio
 
-from mock_aws import get_aws_state
-from networkX_graph import build_aws_graph
+#import functions from python codes
+from mock_aws import get_aws_state          #mock data ingestion
+from networkX_graph import build_aws_graph      #graph module
+from graph_drift_detection import detect_internet_to_private_db_drift       #drift detection
 
-from graph_drift_detection import detect_internet_to_private_db_drift
-
+#dashboard function defined in cli dashoard
 from cli_dashboard import (
     console,
     show_topology,
@@ -14,14 +16,11 @@ from cli_dashboard import (
 
 import networkx as nx
 
-
-# ============================================================
-# ADAPTER
 # Convert AWS ingestion output to Graph Foundation format
-# ============================================================
-
+#adapter function
 def convert_aws_data(aws_data):
 
+    #empty dictionary
     graph_data = {
         "vpcs": [],
         "subnets": [],
@@ -29,10 +28,7 @@ def convert_aws_data(aws_data):
         "security_groups": []
     }
 
-    # --------------------------------------------------------
-    # VPC
-    # --------------------------------------------------------
-
+    #vpc
     vpc_ids = set()
 
     for subnet in aws_data.get("subnets", []):
@@ -47,21 +43,14 @@ def convert_aws_data(aws_data):
 
             vpc_ids.add(vpc_id)
 
-    # --------------------------------------------------------
-    # SUBNETS
-    # --------------------------------------------------------
-
+    #subnets
     for subnet in aws_data.get("subnets", []):
 
         graph_data["subnets"].append({
             "SubnetId": subnet.get("subnet_id"),
             "VpcId": subnet.get("vpc_id")
         })
-
-    # --------------------------------------------------------
-    # EC2 INSTANCES
-    # --------------------------------------------------------
-
+# EC2 instances
     for instance in aws_data.get("ec2", []):
 
         security_groups = []
@@ -77,11 +66,7 @@ def convert_aws_data(aws_data):
             "SubnetId": instance.get("subnet_id"),
             "SecurityGroups": security_groups
         })
-
-    # --------------------------------------------------------
-    # SECURITY GROUPS
-    # --------------------------------------------------------
-
+    #security groups
     for sg in aws_data.get("security_groups", []):
 
         graph_data["security_groups"].append({
@@ -91,11 +76,7 @@ def convert_aws_data(aws_data):
 
     return graph_data
 
-
-# ============================================================
 # BUILD COMPLETE GRAPH
-# ============================================================
-
 def build_complete_graph(aws_data):
 
     graph_data = convert_aws_data(aws_data)
@@ -104,28 +85,17 @@ def build_complete_graph(aws_data):
 
     return graph
 
-
-# ============================================================
 # ADD INTERNET / DATABASE INFORMATION
-# ============================================================
-
 def add_drift_nodes(graph, aws_data):
-
-    # --------------------------------------------------------
     # INTERNET NODE
-    # --------------------------------------------------------
-
     graph.add_node(
         "0.0.0.0/0",
         type="internet",
         name="Internet (0.0.0.0/0)"
     )
 
-    # --------------------------------------------------------
     # CONNECT INTERNET TO SECURITY GROUPS
     # BASED ON INGRESS RULES
-    # --------------------------------------------------------
-
     for sg in aws_data.get("security_groups", []):
 
         sg_id = sg.get("group_id")
@@ -148,21 +118,12 @@ def add_drift_nodes(graph, aws_data):
 
     return graph
 
-
-# ============================================================
-# RUN COMPLETE AERODRIFT SYSTEM
-# ============================================================
-
+#RUN COMPLETE AERODRIFT SYSTEM
 async def main():
 
     console.print(
         "\n[bold cyan]Starting AeroDrift...[/bold cyan]\n"
     )
-
-    # --------------------------------------------------------
-    # STEP 1: AWS INGESTION
-    # --------------------------------------------------------
-
     console.print(
         "[yellow]1. Collecting AWS infrastructure state...[/yellow]"
     )
@@ -173,10 +134,6 @@ async def main():
         "[green]✓ AWS state collected[/green]\n"
     )
 
-    # --------------------------------------------------------
-    # STEP 2: GRAPH FOUNDATION
-    # --------------------------------------------------------
-
     console.print(
         "[yellow]2. Building NetworkX cloud graph...[/yellow]"
     )
@@ -186,11 +143,6 @@ async def main():
     console.print(
         "[green]✓ NetworkX graph created[/green]\n"
     )
-
-    # --------------------------------------------------------
-    # STEP 3: ADD NETWORK ACCESS INFORMATION
-    # --------------------------------------------------------
-
     console.print(
         "[yellow]3. Adding network access relationships...[/yellow]"
     )
@@ -203,11 +155,6 @@ async def main():
     console.print(
         "[green]✓ Network relationships added[/green]\n"
     )
-
-    # --------------------------------------------------------
-    # STEP 4: GRAPH DRIFT DETECTION
-    # --------------------------------------------------------
-
     console.print(
         "[yellow]4. Running graph drift detection...[/yellow]"
     )
@@ -238,10 +185,6 @@ async def main():
             "[green]✓ No Internet → Private Database "
             "drift detected[/green]\n"
         )
-
-    # --------------------------------------------------------
-    # STEP 5: RICH DASHBOARD
-    # --------------------------------------------------------
 
     console.print(
         "\n[bold cyan]AeroDrift Dashboard Ready[/bold cyan]\n"
@@ -285,11 +228,6 @@ async def main():
             console.print(
                 "[red]Invalid choice.[/red]"
             )
-
-
-# ============================================================
-# START
-# ============================================================
 
 if __name__ == "__main__":
 
