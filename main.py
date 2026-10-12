@@ -28,7 +28,7 @@ def convert_aws_data(aws_data):
         "security_groups": []
     }
 
-    #vpc
+    #vpc empty set
     vpc_ids = set()
 
     for subnet in aws_data.get("subnets", []):
