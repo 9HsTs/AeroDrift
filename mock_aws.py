@@ -216,6 +216,7 @@ async def get_aws_state():
         "security_groups": security_groups
     }
 
+#main function
 async def main():
 
     state = await get_aws_state()
