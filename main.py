@@ -131,7 +131,7 @@ async def main():
     aws_data = await get_aws_state()
 
     console.print(
-        "[green]✓ AWS state collected[/green]\n"
+        "[green]AWS state collected[/green]\n"
     )
 
     console.print(
@@ -141,7 +141,7 @@ async def main():
     graph = build_complete_graph(aws_data)
 
     console.print(
-        "[green]✓ NetworkX graph created[/green]\n"
+        "[green]NetworkX graph created[/green]\n"
     )
     console.print(
         "[yellow]3. Adding network access relationships...[/yellow]"
@@ -153,7 +153,7 @@ async def main():
     )
 
     console.print(
-        "[green]✓ Network relationships added[/green]\n"
+        "[green]Network relationships added[/green]\n"
     )
     console.print(
         "[yellow]4. Running graph drift detection...[/yellow]"
@@ -166,7 +166,7 @@ async def main():
     if drift_paths:
 
         console.print(
-            "\n[bold red]⚠ SECURITY DRIFT DETECTED![/bold red]\n"
+            "\n[bold red]SECURITY DRIFT DETECTED![/bold red]\n"
         )
 
         for path in drift_paths:
@@ -182,7 +182,7 @@ async def main():
     else:
 
         console.print(
-            "[green]✓ No Internet → Private Database "
+            "[green]No Internet → Private Database "
             "drift detected[/green]\n"
         )
 
