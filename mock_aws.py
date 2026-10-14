@@ -124,11 +124,12 @@ class MockEC2Client:
 ec2 = MockEC2Client()
 
 #the asynchronous wrapper
+#executes when that cotoutine is awaited or scehduled as a task
 async def async_boto3_call(func, **kwargs):
    
     loop = asyncio.get_running_loop()
 
-    return await loop.run_in_executor(
+    return await loop.run_in_executor(      #executer -> mechanism for running work outside the event loop thread.
         None,
         lambda: func(**kwargs)
     )
