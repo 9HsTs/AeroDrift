@@ -133,6 +133,8 @@ async def async_boto3_call(func, **kwargs):
         None,
         lambda: func(**kwargs)
     )
+
+#why use wrapper --> synchronous call to worker thread so the event loop can continue schedulinng other tasks
 #get EC2 instances
 async def get_ec2_instances():
     response = await async_boto3_call(
