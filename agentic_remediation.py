@@ -5,6 +5,7 @@
 import ast
 import asyncio
 
+#import mock aws data
 from mock_aws import get_aws_state
 
 #remediation functon
@@ -17,3 +18,16 @@ def generate_remediation(drift):
     port = drift.get("port")
     protocol = drift.get("protocol", "tcp")
     cidr = drift.get("cidr")
+
+    if not isinstance(sg_id, str) or not sg_id.startswith("sg-"):
+        raise ValueError("Invalid Security Group ID")
+
+    if type(port) is not int or not 0 <= port <= 65535:
+        raise ValueError("Invalid port number")
+
+    if protocol not in ("tcp", "udp", "icmp", "-1"):
+        raise ValueError("Unsupported protocol")
+
+    if not isinstance(cidr, str) or not cidr:
+        raise ValueError("CIDR is required")
+
