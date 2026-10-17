@@ -5,7 +5,7 @@
 """AeroDrift AWS ingestion layer code"""
 
 import asyncio
-import boto3  #AWS SDK
+import boto3  #AWS Software develoment kit
 
 #fetching EC2, subnet and security grps
 #EC2 -> Elastic compute cloude
