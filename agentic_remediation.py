@@ -3,6 +3,9 @@
 #instead of manually building a string caontaining py code, construct the function call as an AST and then convert it into py source code
 
 import ast
+import asyncio
+
+from mock_aws import get_aws_state
 
 #remediation functon
 #drift -> input parameter containing information about the detected cloud configuration drift
