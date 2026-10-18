@@ -19,9 +19,14 @@ def generate_remediation(drift):
     protocol = drift.get("protocol", "tcp")
     cidr = drift.get("cidr")
 
+
+    #validating the input
+    #isinstance -> checks value is string
+    #startwith -> check prefix
     if not isinstance(sg_id, str) or not sg_id.startswith("sg-"):
         raise ValueError("Invalid Security Group ID")
 
+    #checks port number
     if type(port) is not int or not 0 <= port <= 65535:
         raise ValueError("Invalid port number")
 
