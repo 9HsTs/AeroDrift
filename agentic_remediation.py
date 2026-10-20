@@ -30,9 +30,11 @@ def generate_remediation(drift):
     if type(port) is not int or not 0 <= port <= 65535:
         raise ValueError("Invalid port number")
 
+    #checks protocol
     if protocol not in ("tcp", "udp", "icmp", "-1"):
         raise ValueError("Unsupported protocol")
 
+    #checks CIDR values
     if not isinstance(cidr, str) or not cidr:
         raise ValueError("CIDR is required")
 
