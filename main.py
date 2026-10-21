@@ -17,7 +17,7 @@ from cli_dashboard import (
 import networkx as nx
 
 #import execute rollback function from sandbox mock
-from execution_sandbox_mock import execute_rollback
+#from execution_sandbox_mock import execute_rollback
 
 # Convert AWS ingestion output to Graph Foundation format
 #adapter function

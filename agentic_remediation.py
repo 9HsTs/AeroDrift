@@ -11,9 +11,22 @@ from mock_aws import get_aws_state
 #remediation functon
 #drift -> input parameter containing information about the detected cloud configuration drift
 def generate_remediation(drift):
-    if drift.get("drift type") != "open_sg_port":
-        raise ValueError("Unsupported Drift Type")
+
+    print("\nDEBUG : Received Drift = ", repr(drift))
+
+    if not isinstance(drift, dict):
+        raise TypeError(f"Expected dictionary, got {type(drift).__name__}")
     
+    drift_type = drift.get("drift_type")
+
+    print("DEBUG : drift_type =",repr(drift_type))
+
+    if drift_type != "open_sg_port":
+        raise ValueError(f"Unsupported Drift Type : {drift_type!r}")
+    #if drift.get("drift type") != "open_sg_port":
+        #raise ValueError("Unsupported Drift Type")
+    
+    #remediation parameters
     sg_id = drift.get("security_group_id")
     port = drift.get("port")
     protocol = drift.get("protocol", "tcp")
@@ -109,70 +122,93 @@ def generate_remediation(drift):
 
     return generated_code
 
-#asynchronous functon
-async def main():
+ #DRIFT DETECTION FROM MOCK AWS DATA
+def detect_drifts(state):
+    
+    drifts = []
 
-    # Import mock cloud state through the ingestion module
-    state = await get_aws_state()
+    for sg in state.get("security_groups", []):
+        sg_id = sg.get("group_id")
 
-    #drift variable init
-    drift = None
-
-    # Find a publicly accessible SSH rule
-    #iterarting over SG
-    for sg in state["security_groups"]:
-        for rule in sg["ingress_rules"]:
-
-            #extracting the rule field 
+        for rule in sg.get("ingress_rules", []):
             protocol = rule.get("IpProtocol")
             from_port = rule.get("FromPort")
             to_port = rule.get("ToPort")
 
-            for ip_range in rule.get("IpRanges", []):
+            # This remediation generator handles one exact port.
+            # Skip protocols or port ranges it cannot safely handle.
+            if protocol not in ("tcp", "udp"):
+                continue
 
+            if (
+                type(from_port) is not int
+                or type(to_port) is not int
+                or from_port != to_port
+            ):
+                continue
+
+            for ip_range in rule.get("IpRanges", []):
                 cidr = ip_range.get("CidrIp")
 
-                #the drift ditection condition
-                if (
-                    protocol == "tcp"
-                    and from_port <= 22 <= to_port
-                    and cidr == "0.0.0.0/0"
-                ):
-                    #drift dictionary
-                    drift = {
+                if cidr == "0.0.0.0/0":
+                    drifts.append({
                         "drift_type": "open_sg_port",
-                        "security_group_id": sg["group_id"],
-                        "port": 22,
+                        "security_group_id": sg_id,
+                        "port": from_port,
                         "protocol": protocol,
                         "cidr": cidr
-                    }
+                    })
 
-                    break
+    return drifts
 
-            if drift is not None:
-                break
+#CONNECT INGESTION -> DETECTION -> REMEDIATION
+async def main():
 
-        if drift is not None:
-            break
+    print("\n========== AERODRIFT ==========")
+    print("Loading cloud state from mock_aws.py")
 
-    #no drfit case
-    if drift is None:
-        print("No public SSH drift detected.")
+    #Ingest mock cloud state.
+    #import mock data
+    state = await get_aws_state()
+
+    print("\n[1] MOCK AWS INGESTION")
+    print("EC2 instances:", len(state.get("ec2", [])))
+    print("Subnets:", len(state.get("subnets", [])))
+    print("Security groups:", len(state.get("security_groups", [])))
+
+    #Detect drift using the ingested state.
+    drifts = detect_drifts(state)
+
+    print("\n[2] DRIFT DETECTION")
+
+    if not drifts:
+        print("No matching public TCP/UDP port exposure detected.")
         return
 
-    # Generate remediation code from detected drift
-    code = generate_remediation(drift)
+    for index, drift in enumerate(drifts, start=1):
+        print(f"\nDrift No {index}")
+        print("Type:", drift["drift_type"])
+        print("Security Group:", drift["security_group_id"])
+        print("Protocol:", drift["protocol"])
+        print("Port:", drift["port"])
+        print("Public CIDR:", drift["cidr"])
 
-    print("\n[Agentic Remediation]")
-    print("Detected: Public SSH port is open")
-    print("\nDrift data:\n")
-    print(drift)
+    #Generate remediation code for each drift.
+    print("\n[3] GENERATED REMEDIATION CODE")
 
-    print("\nGenerated boto3 call:\n")
-    print(code)
+    for index, drift in enumerate(drifts, start=1):
+        print("\nDEBUG DRIFT : ", drift)
+        print("DEBUG DRIFT TYPE : ", repr(drift.get("drift_type")))
+        code = generate_remediation(drift)
+
+        print(f"\nRemediation No : {index}")
+        print("Target:", drift["security_group_id"])
+        print(code)
+
+    print("\n[4] STATUS")
+    print("Drift detection completed.")
+    print("Remediation code generated; no changes executed.")
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
