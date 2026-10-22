@@ -117,6 +117,16 @@ class MockEC2Client:
                 }
             ]
         }
+    
+    def revoke_security_group_ingress(self,GroupId, IpPermissions):
+        print("\n[MOCK AWS] Revoke Request received")
+        print("Security Group : ", GroupId)
+        print("Permissions : ", IpPermissions)
+
+        return{
+            "Return": True,
+            "GroupId":GroupId
+        }
 
 # Use local mock data instead of making real AWS API calls.
 #creating the mock client
