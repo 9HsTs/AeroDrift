@@ -106,6 +106,38 @@ def execute_sandbox(generated_code, mock_ec2):
         restricted_locals           #local namespaces
     )
 
-    print("Sandbox execution completed.")
+    print("\nSANDBOX EXECUTION COMPLETED.\n")
+
+async def main():
+
+    print("\n========== AERODRIFT SANDBOX ==========")
+
+    # Load mock cloud state.
+    state = await get_aws_state()
+
+    # Detect cloud configuration drifts.
+    drifts = detect_drifts(state)
+
+    if not drifts:
+        print("No matching drift found.")
+        return
+
+    # Create the mock client used for execution.
+    mock_ec2 = MockEC2Client()
+
+    for index, drift in enumerate(drifts, start=1):
+
+        print(f"\nDrift {index}: {drift}")
+
+        # Generate rollback code using the existing module.
+        generated_code = generate_remediation(drift)
+
+        print("\nGenerated code:")
+        print(generated_code)
+
+        # Execute only after validation.
+        execute_sandbox(generated_code, mock_ec2)
 
 
+if __name__ == "__main__":
+    asyncio.run(main())
