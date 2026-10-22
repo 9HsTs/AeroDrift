@@ -88,4 +88,24 @@ def validate_remediation_code(generated_code):
 
     return generated_code
 
+#sandbox execution code
+def execute_sandbox(generated_code, mock_ec2):
+   
+
+    safe_code = validate_remediation_code(generated_code)
+
+    # Only the mock EC2 client is provided to the code.
+    restricted_globals = {"__builtins__": {}}
+    restricted_locals = {"ec2": mock_ec2}
+
+    #built in py function that executes py code dynamically
+
+    exec(
+        safe_code,                  #py code -> remediation code
+        restricted_globals,         #global namespaces
+        restricted_locals           #local namespaces
+    )
+
+    print("Sandbox execution completed.")
+
 
