@@ -17,7 +17,9 @@ from cli_dashboard import (
 import networkx as nx
 
 #import execute rollback function from sandbox mock
-#from execution_sandbox_mock import execute_rollback
+from execution_sandbox_mock import execute_sandbox
+from agentic_remediation import generate_remediation
+from mock_aws import MockEC2Client
 
 # Convert AWS ingestion output to Graph Foundation format
 #adapter function
@@ -121,6 +123,78 @@ def add_drift_nodes(graph, aws_data):
 
     return graph
 
+def run_remediation_sandbox(aws_data):
+
+    console.print(
+        "\n[bold yellow]Preparing remediation...[/bold yellow]"
+    )
+
+    mock_ec2 = MockEC2Client()
+
+    # Find an exposed SSH rule in mock AWS data.
+    detected_drift = None
+
+    for sg in aws_data.get("security_groups", []):
+
+        for rule in sg.get("ingress_rules", []):
+
+            protocol = str(rule.get("IpProtocol", "tcp"))
+
+            for ip_range in rule.get("IpRanges", []):
+
+                cidr = ip_range.get("CidrIp")
+                port = rule.get("FromPort")
+
+                if cidr == "0.0.0.0/0" and port == 22:
+
+                    detected_drift = {
+                        "drift_type": "open_sg_port",
+                        "security_group_id": sg.get("group_id"),
+                        "port": 22,
+                        "protocol": protocol,
+                        "cidr": cidr
+                    }
+                    break
+
+            if detected_drift:
+                break
+
+        if detected_drift:
+            break
+
+    if not detected_drift:
+        console.print(
+            "[green]No exposed SSH rule found for remediation.[/green]"
+        )
+        return
+
+    console.print(
+        f"[red]Exposed SSH rule detected: "
+        f"{detected_drift}[/red]"
+    )
+
+    generated_code = generate_remediation(detected_drift)
+
+    console.print("\n[bold cyan]Generated remediation code:[/bold cyan]")
+    console.print(generated_code)
+
+    approval = input(
+        "\nExecute remediation on mock AWS? (yes/no): "
+    ).strip().lower()
+
+    if approval != "yes":
+        console.print("[yellow]Remediation cancelled.[/yellow]")
+        return
+
+    result = execute_sandbox(
+        generated_code,
+        mock_ec2
+        #approved=True
+    )
+
+    console.print(f"\n[bold green]{result}[/bold green]")
+
+
 #RUN COMPLETE AERODRIFT SYSTEM
 async def main():
 
@@ -213,6 +287,7 @@ async def main():
         elif choice == "2":
 
             detect_drift(graph)
+            run_remediation_sandbox(aws_data)
 
         elif choice == "3":
 
