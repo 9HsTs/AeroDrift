@@ -1,7 +1,14 @@
+#incident report generates pdf report
+#this report contain info about drift detection, remediation execution 
+
+
 import os
 from datetime import datetime
+
+#used to escape special char in txt
 from xml.sax.saxutils import escape
 
+#reportlab -> used to create PDF docu
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
@@ -16,17 +23,10 @@ from reportlab.platypus import (
     Preformatted,
 )
 
-
-# =====================================================
-# CONFIGURATION
-# =====================================================
-
+#CONFIGURATION
 REPORT_DIR = "reports"
 
-
-# =====================================================
-# PDF INCIDENT REPORT GENERATOR
-# =====================================================
+#PDF INCIDENT REPORT GENERATOR
 
 def generate_incident_report(
     drift,
@@ -36,12 +36,8 @@ def generate_incident_report(
     before_state=None,
     after_state=None,
 ):
-    """
-    Generate a PDF incident report for AeroDrift.
-
-    execution_status must reflect the actual outcome
-    reported by the execution sandbox.
-    """
+    
+    #Generate a PDF incident report for AeroDrift.
 
     if not isinstance(drift, dict):
         raise TypeError("drift must be a dictionary")
@@ -86,11 +82,8 @@ def generate_incident_report(
     )
 
     story = []
-
-    # -------------------------------------------------
-    # DOCUMENT HEADER
-    # -------------------------------------------------
-
+#DOCUMENT HEADER
+ 
     story.append(
         Paragraph("AeroDrift - Incident Report", title_style)
     )
@@ -111,10 +104,8 @@ def generate_incident_report(
     )
 
     story.append(Spacer(1, 0.4 * cm))
-
-    # -------------------------------------------------
-    # DRIFT DETAILS
-    # -------------------------------------------------
+    
+    #DRIFT DETAILS
 
     story.append(
         Paragraph("1. Detected Drift", heading_style)
@@ -166,9 +157,7 @@ def generate_incident_report(
     story.append(details_table)
     story.append(Spacer(1, 0.4 * cm))
 
-    # -------------------------------------------------
-    # REMEDIATION DETAILS
-    # -------------------------------------------------
+#REMEDIATION DETAILS
 
     story.append(
         Paragraph("2. Agent Remediation", heading_style)
@@ -190,11 +179,9 @@ def generate_incident_report(
     )
 
     story.append(Spacer(1, 0.3 * cm))
-
-    # -------------------------------------------------
-    # EXECUTION RESULT
-    # -------------------------------------------------
-
+    
+    #EXECUTION RESULT
+    
     story.append(
         Paragraph("3. Execution Result", heading_style)
     )
@@ -216,9 +203,7 @@ def generate_incident_report(
 
     story.append(Spacer(1, 0.3 * cm))
 
-    # -------------------------------------------------
-    # BEFORE / AFTER STATE
-    # -------------------------------------------------
+#BEFORE / AFTER STATE
 
     story.append(
         Paragraph(
@@ -249,9 +234,7 @@ def generate_incident_report(
 
         story.append(Spacer(1, 0.2 * cm))
 
-    # -------------------------------------------------
-    # INCIDENT SUMMARY
-    # -------------------------------------------------
+    #INCIDENT SUMMARY
 
     story.append(
         Paragraph("5. Incident Summary", heading_style)
@@ -274,10 +257,8 @@ def generate_incident_report(
         Paragraph(escape(summary), body_style)
     )
 
-    # -------------------------------------------------
-    # WRITE PDF
-    # -------------------------------------------------
-
+    #WRITE PDF
+    
     document = SimpleDocTemplate(
         filepath,
         pagesize=A4,
@@ -291,10 +272,7 @@ def generate_incident_report(
 
     return filepath
 
-
-# =====================================================
-# TEST INCIDENT REPORT GENERATION
-# =====================================================
+#TEST INCIDENT REPORT GENERATION
 
 if __name__ == "__main__":
 
