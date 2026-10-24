@@ -1,3 +1,6 @@
+#ssqlite3 -> used to integrate the SQLite dtabase with python
+#JSON -> for storing and exchanging data. translate between JSON data formats and native python data types
+
 import sqlite3
 import json
 import asyncio
@@ -8,21 +11,20 @@ import networkx as nx
 from mock_aws import get_aws_state
 from networkX_graph import build_aws_graph
 
+#AERODRIFT STATE PERSISTENCE
 
-# ============================================================
-# AERODRIFT STATE PERSISTENCE
-# ============================================================
-
+#database name
 DB_NAME = "aerodrift_history.db"
 
 
 def get_connection():
-    """Create a connection to the local SQLite database."""
+    
+    #Create a connection to the local SQLite database.
     return sqlite3.connect(DB_NAME)
 
 
 def initialize_database():
-    """Create database tables if they do not already exist."""
+    #Create database tables if they do not already exist.
 
     with get_connection() as conn:
 
@@ -58,13 +60,10 @@ def initialize_database():
 
     print("AeroDrift database initialized.")
 
-
-# ============================================================
-# CONVERT MOCK AWS DATA TO GRAPH FORMAT
-# ============================================================
-
+#CONVERT MOCK AWS DATA TO GRAPH FORMAT
 def convert_aws_data(aws_data):
-    """Convert mock AWS data into the graph builder's format."""
+    
+    #Convert mock AWS data into the graph builder's format.
 
     graph_data = {
         "vpcs": [],
@@ -117,13 +116,9 @@ def convert_aws_data(aws_data):
 
     return graph_data
 
-
-# ============================================================
-# SAVE GRAPH HISTORY
-# ============================================================
-
+#SAVE GRAPH HISTORY
 def save_graph(graph):
-    """Save a NetworkX graph as a timestamped snapshot."""
+    #Save a NetworkX graph as a timestamped snapshot.
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -168,16 +163,12 @@ def save_graph(graph):
 
     return snapshot_id
 
-
-# ============================================================
-# COLLECT MOCK AWS STATE AND SAVE SNAPSHOT
-# ============================================================
+#COLLECT MOCK AWS STATE AND SAVE SNAPSHOT
 
 async def save_mock_aws_snapshot():
-    """
-    Collect mock AWS data, build the graph,
-    and save it to the SQLite database.
-    """
+    
+    #Collect mock AWS data, build the graph,and save it to the SQLite database.
+    
 
     initialize_database()
 
@@ -200,13 +191,10 @@ async def save_mock_aws_snapshot():
 
     return snapshot_id
 
-
-# ============================================================
-# VIEW AVAILABLE SNAPSHOTS
-# ============================================================
+#VIEW AVAILABLE SNAPSHOTS
 
 def list_snapshots():
-    """Display all saved graph snapshots."""
+    #Display all saved graph snapshots.
 
     with get_connection() as conn:
 
@@ -226,9 +214,7 @@ def list_snapshots():
     return rows
 
 
-# ============================================================
-# LOAD A SAVED GRAPH
-# ============================================================
+#LOAD A SAVED GRAPH
 
 def load_graph(snapshot_id):
     """Reconstruct a saved graph from SQLite."""
@@ -273,9 +259,8 @@ def load_graph(snapshot_id):
     return graph
 
 
-# ============================================================
-# COMPARE TWO HISTORICAL SNAPSHOTS
-# ============================================================
+
+#COMPARE TWO HISTORICAL SNAPSHOTS
 
 def diff_graphs(old_snapshot_id, new_snapshot_id):
     """Identify added, removed, and modified graph elements."""
@@ -352,9 +337,7 @@ def diff_graphs(old_snapshot_id, new_snapshot_id):
     return report
 
 
-# ============================================================
-# STANDALONE TEST
-# ============================================================
+#STANDALONE TEST
 
 if __name__ == "__main__":
 
