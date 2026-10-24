@@ -1,8 +1,10 @@
 #incident report generates pdf report
 #this report contain info about drift detection, remediation execution 
 
-
+#import OS related operations
 import os
+
+#import date and time
 from datetime import datetime
 
 #used to escape special char in txt
